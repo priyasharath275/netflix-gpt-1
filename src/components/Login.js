@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/vadilate";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../utils/firebaseConfig";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
@@ -11,10 +16,46 @@ const Login = () => {
   const handleButtonClick = () => {
     const message = checkValidData(
       emailRef.current.value,
-      passwordRef.current.value,
-     
+      passwordRef.current.value
     );
     setErrorMessage(message);
+    if (message) return;
+    if (!isSignInForm) {
+      createUserWithEmailAndPassword(
+        auth,
+        emailRef.current.value,
+        passwordRef.current.value
+      )
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log(user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(`${errorCode}-${errorMessage}`);
+          // ..
+        });
+    } else {
+      signInWithEmailAndPassword(
+        auth,
+        emailRef.current.value,
+        passwordRef.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user,"userlogged");
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(`${errorCode}-${errorMessage}`);
+        });
+    }
   };
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
@@ -38,7 +79,7 @@ const Login = () => {
         </h1>
         {!isSignInForm && (
           <input
-          ref={nameRef}
+            ref={nameRef}
             type="text"
             placeholder="Full Name"
             className="p-4 my-2 w-full bg-gray-700"
