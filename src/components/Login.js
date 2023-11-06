@@ -4,12 +4,16 @@ import { checkValidData } from "../utils/vadilate";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "../utils/firebaseConfig";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const dispatch = useDispatch();
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -29,7 +33,28 @@ const Login = () => {
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user;
-          console.log(user);
+          // console.log(user);
+          updateProfile(user, {
+            displayName: nameRef.current.value,
+            photoURL:
+              "https://lh3.googleusercontent.com/a/ACg8ocL4YSxHwPSelNGJcCFGidyupIY8jHHm0KnlUL30SqNkeA=s324-c-no",
+          })
+            .then(() => {
+              const { uid, email, displayName, photoURL } = auth.currentUser;
+              dispatch(
+                addUser({
+                  uid: uid,
+                  email: email,
+                  displayName: displayName,
+                  photoURL: photoURL,
+                })
+              );
+            })
+            .catch((error) => {
+              // An error occurred
+              // ...
+            });
+
           // ...
         })
         .catch((error) => {
@@ -47,7 +72,7 @@ const Login = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          console.log(user,"userlogged");
+
           // ...
         })
         .catch((error) => {
